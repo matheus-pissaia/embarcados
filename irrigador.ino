@@ -2,8 +2,8 @@
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 
-#define relayModule 8     // Pin 8 receives the relay
-#define moistureSensor A0  // Pin A0 receives the moisture sensor
+#define relayModule 8;     // Pin 8 receives the relay
+#define moistureSensor A0;  // Pin A0 receives the moisture sensor
 
 //------------------------------------------
 
