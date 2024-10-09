@@ -2,8 +2,8 @@
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 
-#define relayModule 8     // Pino 8 recebe o relé
-#define moistureSensor A0  // Pino A0 recebe o sensor de umidade
+#define relayModule 8     // Pin 8 receives the relay
+#define moistureSensor A0  // Pin A0 receives the moisture sensor
 
 //------------------------------------------
 
@@ -11,6 +11,7 @@ const char* ssid = "Irrigador";
 const char* password = "irrigador123";
 
 int ValAnalogIn;
+int activationLevel = 40;
 ESP8266WebServer server(80);
 
 //------------------------------------------
@@ -329,40 +330,58 @@ void webpage()
 }
 
 void hydrationLevel() {
-  ValAnalogIn = analogRead(moistureSensor);              // Relaciona o valor analógico com o recebido do sensor
-  int porcentagem = map(ValAnalogIn, 1023, 0, 0, 100);  // Relaciona o valor analógico à porcentagem
+  int percentage = map(ValAnalogIn, 1023, 0, 0, 100);
 
-  char porcentagemString[3];  // buffer para armazenar a string resultante
+  char percentageString[3];  // Buffer to store percentage as string
 
-  // Convertendo o número para string
-  sprintf(porcentagemString, "%d", porcentagem);
+  // Converts the percentage number to string
+  sprintf(percentageString, "%d", percentage);
 
-  server.send(200, "application/json", porcentagemString);
+  server.send(200, "application/json", percentageString);
+}
+
+void setActivationLevel() {
+    StaticJsonDocument<300> JSONData;
+    String jsonString = server.arg("plain");
+    DeserializationError error = deserializeJson(JSONData, jsonString);
+
+    if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        server.send(500,"application/json","Error in parsing");
+        return;
+    }
+
+    if(JSONData.containsKey("level")){
+        // Set activation level
+        activationLevel = JSONData["level"].as<int>()
+    } else {
+        server.send(400,"application/json","Bad JSON");
+    }
 }
 //=================================================================
 void setup()
 {
-  pinMode(relayModule, OUTPUT);  // Declara o relayModule como Saída
-  // Inicia a comunicação serial para debug
+  pinMode(relayModule, OUTPUT);  // Declare relayModule as out
   Serial.begin(115200);
   delay(10);
   
-  // Conecta-se ao Wi-Fi
   Serial.println();
-  Serial.println("Conectando-se à rede Wi-Fi...");
+  Serial.println("Starting Wi-Fi...");
   WiFi.softAP(ssid, password);
 
   IPAddress myIP = WiFi.softAPIP();
-  Serial.println("IP do Access Point: ");
+  Serial.println("Access Point IP: ");
   Serial.println(myIP);
 
-  // Definicao de rotas
+  // Define routes
   server.on("/", webpage);
-  server.on("/hydration-level", hydrationLevel);
+  server.on("/hydration-level", HTTP_GET, hydrationLevel);
+  server.on("/activation-level", HTTP_POST, setActivationLevel);
 
-  // Inicia o servidor
+  // Init server
   server.begin();
-  Serial.println("Servidor iniciado");
+  Serial.println("Server started!");
 
 }
 //=================================================================
@@ -372,15 +391,13 @@ void loop()
 
   server.handleClient();
 
-  int umidadePorcentagem = map(ValAnalogIn, 1023, 0, 0, 100);  // Relaciona o valor analógico à porcentagem
+  int moisturePercentage = map(ValAnalogIn, 1023, 0, 0, 100);  // Parse analog value to percentage
 
-  if (umidadePorcentagem < 40) {
-    digitalWrite(relayModule, HIGH); // Liga o relé
+  if (moisturePercentage < activationLevel) {
+    digitalWrite(relayModule, HIGH); // Turn on the relay
+  } else {
+    digitalWrite(relayModule, LOW); // Turn off the relay
   }
   
-  if (umidadePorcentagem > 70) {
-    digitalWrite(relayModule, LOW); // Desliga o relé
-  }
-
   delay(500);
 }
