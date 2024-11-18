@@ -1,23 +1,17 @@
-#include <WiFiClient.h> 
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-#include <ESPAsyncWebServer.h>
+#include <WiFiClientSecureBearSSL.h>
 #include <ArduinoJson.h>
 
 // Define pin connections
 #define SOIL_MOISTURE_PIN A0
 #define RELAY_PIN D3
 
-WiFiClient wifiClient;
-
 // WiFi credentials
-const char *ssid = "wifi-name";
-const char *password = "wifi-password";
+const char *ssid = "ssid";
+const char *password = "password";
 
-String BASE_URL = "http://192.168.0.167:3333/rega"; // TODO set correct URL
-
-// Create AsyncWebServer object on port 80
-AsyncWebServer server(80);
+String BASE_URL = "https://api-regador.onrender.com";
 
 int soilMoistureValue = 0;
 int activationLevel = 20;
@@ -25,41 +19,51 @@ int activationLevel = 20;
 unsigned long lastPostTime = 0;
 const unsigned long postInterval = 2000; // 2 seconds
 
-void notFound(AsyncWebServerRequest *request) {
-  request->send(404, "text/plain", "Not found");
-}
-
 void sendMoistureLevel(int moistureLevel) {
-  HTTPClient http;
-  http.begin(wifiClient, BASE_URL + "/moisture");
-  http.addHeader("Content-Type", "application/json"); // Set content type to JSON
+  std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+  client->setInsecure();
+
+  HTTPClient https;
+
+  https.begin(*client, BASE_URL + "/regas");
+  https.addHeader("Content-Type", "application/json"); // Set content type to JSON
   
   // Create JSON document
   JsonDocument doc;
-  doc["moisture"] = moistureLevel;
+  doc["umidade"] = moistureLevel;
 
   String json;
   serializeJson(doc, json);
 
-  http.POST(json);
-  http.end();
+  int httpCode = https.POST(json);
+
+  if (httpCode != HTTP_CODE_OK)
+    Serial.printf("[HTTP] POST... failed, error: %s\n", https.errorToString(httpCode).c_str());
+
+  https.end();
 }
 
 void getActivationLevel() {
-  HTTPClient http;
-  DynamicJsonDocument doc(1024);
+  std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+  client->setInsecure();
 
-  http.begin(wifiClient, BASE_URL + "/activation");
-  http.GET();
+  HTTPClient https;
 
-  String payload = http.getString();
+  https.begin(*client, BASE_URL + "/activation-level");
+  int httpCode = https.GET();
 
-  http.end();
+  if (httpCode != HTTP_CODE_OK)
+    Serial.printf("[HTTP] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
 
-  deserializeJson(doc, payload);
+  String payload = https.getString();
 
-  if (doc["activation"])
-    activationLevel = doc["activation"].as<int>();
+  https.end();
+
+  // Server sends a normal string instead of JSON object
+  int level = payload.toInt();
+
+  if (level && level != activationLevel)
+    activationLevel = level;
 }
 
 void setup() {
@@ -98,41 +102,6 @@ void setup() {
 
   // Set activation level saved previously in the API
   getActivationLevel();
-
-  // -------- ROUTES --------
-
-  // Should be able to set activation level from API (Use polling instead?)
-  server.on("/activation-level", HTTP_POST, [](AsyncWebServerRequest *request){},
-    NULL,
-    [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
-      // Allocate a temporary JSON document
-      // Use `StaticJsonDocument` if the JSON size is known at compile time
-      DynamicJsonDocument doc(1024);
-
-      // Parse the JSON data
-      DeserializationError error = deserializeJson(doc, data);
-
-      // Check for errors in parsing
-      if (error) {
-        Serial.print("deserializeJson() failed: ");
-        Serial.println(error.c_str());
-        request->send(400, "text/plain", "Invalid JSON");
-        return;
-      }
-
-      if (doc["level"])
-        activationLevel = doc["level"].as<int>();
-
-      request->send(200);
-    }
-  );
-
-  server.onNotFound(notFound);
-
-  // -------- ROUTES --------
-
-  // Start server
-  server.begin();
 }
 
 void loop() {
@@ -151,6 +120,7 @@ void loop() {
   if (currentTime - lastPostTime >= postInterval) {
     lastPostTime = currentTime;
     sendMoistureLevel(soilMoistureValue);
+    getActivationLevel();
   }
 
   delay(500);
