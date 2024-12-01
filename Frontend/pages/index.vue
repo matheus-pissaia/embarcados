@@ -94,6 +94,8 @@
         const data = await $fetch<Rega[]>(BASE_URL + '/regas')
 
         percentage.value = data.length ? data[data.length - 1].umidade : 0
+
+        setTimeout(updatePercentage, 2_000)
     }
 
     async function updateActivationLevel() {
@@ -103,8 +105,7 @@
     }
 
     onMounted(() => {
+        updatePercentage()
         updateActivationLevel()
-        // TODO use setTimeout instead to avoid racing conditions
-        setInterval(updatePercentage, 2_000)
     })
 </script>
