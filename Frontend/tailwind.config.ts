@@ -83,8 +83,7 @@ export default {
 
         borderRadius: {
             8: '8px',
-            32: '32px',
-            full: '9999px',
+            16: '16px',
         },
     },
     plugins: [],

@@ -1,37 +1,37 @@
 <template>
     <div class="h-screen place-content-center bg-gray-800 text-white">
-        <div class="mx-auto grid grid-cols-2 w-fit gap-6">
-            <div class="flex flex-col justify-between rounded-2xl bg-gray-700 p-4">
+        <div class="mx-auto grid grid-cols-2 w-fit gap-18">
+            <div class="flex flex-col justify-between rounded-16 bg-gray-700 p-16">
                 <IconsWaterDrop />
 
                 <div>
                     <p>Humidity</p>
-                    <p class="text-2xl font-bold">
+                    <p class="text-32 font-600">
                         {{ percentage }}%
                     </p>
                 </div>
             </div>
 
-            <div class="flex size-40 flex-col justify-between rounded-2xl bg-blue-500 p-4">
-                <IconsWave />
+            <div class="flex flex-col justify-between size-160 rounded-16 bg-blue-500 p-16">
+                <IconsWaves />
 
                 <div>
                     <p>Water usage</p>
-                    <p class="text-2xl font-bold">
+                    <p class="text-32 font-600">
                         21.5L
                     </p>
                 </div>
             </div>
 
-            <div class="col-span-2 rounded-2xl bg-gray-700 p-4">
+            <div class="col-span-2 rounded-16 bg-gray-700 p-16">
                 <div class="flex justify-between items-center">
                     <span>
                         Activation level:
-                        <span class="font-bold">{{ activationLevel ?? '-' }}%</span>
+                        <span class="font-600">{{ activationLevel ?? '-' }}%</span>
                     </span>
 
                     <button
-                        class="inline-flex w-fit items-center gap-2 rounded-lg bg-blue-500 p-2 font-bold"
+                        class="inline-flex w-fit items-center gap-8 rounded-8 bg-blue-500 p-8 font-600"
                         @click="handleAction"
                     >
                         <span>{{ isEditing ? 'Save' : 'Edit' }}</span>
@@ -42,7 +42,7 @@
 
                 <input
                     type="range"
-                    class="mt-4 w-full"
+                    class="mt-16 w-full"
                     :class="isEditing ? 'block' : 'hidden'"
                     value="40"
                     @input="handleInput"
