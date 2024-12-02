@@ -10,8 +10,8 @@ export type DataPoint = {
 type MoistureChart = Chart<'line', DataPoint[], undefined>
 
 function getTimeUnit(dataset: Ref<DataPoint[]>) {
-    if (dataset.value.length < 2)
-        return 'hour'
+    if (!dataset.value.length)
+        return 'day'
 
     const firstDate = dayjs(dataset.value[0].x)
     const lastDate = dayjs(dataset.value[dataset.value.length - 1].x)
