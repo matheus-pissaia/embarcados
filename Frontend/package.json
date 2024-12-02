@@ -19,6 +19,8 @@
         "@ryze-blockchain/eslint-config": "^0.0.22",
         "@types/throttle-debounce": "^5.0.1",
         "chart.js": "^4.4.7",
+        "chartjs-adapter-dayjs-4": "^1.0.4",
+        "dayjs": "^1.11.13",
         "eslint": "^8.41.0",
         "nanoid": "^5.0.9",
         "throttle-debounce": "^5.0.0"
