@@ -14,9 +14,13 @@
         "vue-router": "latest"
     },
     "devDependencies": {
-        "@nuxtjs/tailwindcss": "^6.12.2",
         "@nuxtjs/eslint-module": "^4.1.0",
+        "@nuxtjs/tailwindcss": "^6.12.2",
         "@ryze-blockchain/eslint-config": "^0.0.22",
-        "eslint": "^8.41.0"
+        "@types/throttle-debounce": "^5.0.1",
+        "chart.js": "^4.4.7",
+        "eslint": "^8.41.0",
+        "nanoid": "^5.0.9",
+        "throttle-debounce": "^5.0.0"
     }
 }
