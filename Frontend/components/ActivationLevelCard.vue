@@ -55,5 +55,5 @@
         activationLevel.value = isNaN(response) ? 0 : response
     }
 
-    onMounted(() => updateActivationLevel)
+    onMounted(updateActivationLevel)
 </script>

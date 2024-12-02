@@ -71,6 +71,6 @@
         updateMoistureChart,
     )
 
-    onMounted(() => updateMoisturePercentage)
+    onMounted(updateMoisturePercentage)
 </script>
 
