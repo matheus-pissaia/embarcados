@@ -65,7 +65,7 @@ export function buildMoistureChart(
                     time: {
                         unit: getTimeUnit(dataset),
                         displayFormats: {
-                            hour: 'h:mm',
+                            hour: 'HH:mm',
                             day: 'MMM D',
                         },
                     },
