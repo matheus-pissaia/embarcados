@@ -53,11 +53,6 @@
 </template>
 
 <script setup lang="ts">
-    type Rega = {
-        umidade: number,
-        dataHora: string
-    }
-
     const BASE_URL = 'https://api-regador.onrender.com'
 
     const isEditing = ref(false)
@@ -91,7 +86,7 @@
     }
 
     async function updatePercentage() {
-        const data = await $fetch<Rega[]>(BASE_URL + '/regas')
+        const data = await $fetch<{ umidade: number, dataHora: string }[]>(BASE_URL + '/regas')
 
         percentage.value = data.length ? data[data.length - 1].umidade : 0
 
