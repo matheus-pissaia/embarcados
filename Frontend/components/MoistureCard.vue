@@ -1,23 +1,29 @@
 <template>
-    <div class="col-span-2 p-16 rounded-16 bg-gray-700">
-        <div class="flex items-center gap-16">
-            <div class="p-8 rounded-8 bg-blue-700">
-                <IconsWaterDrop />
-            </div>
-
-            <div>
-                <p class="text-gray-300 text-14">
-                    Humidity
-                </p>
-                <p class="text-28 font-600 leading-1">
-                    {{ percentage }}%
-                </p>
-            </div>
-
-            <PeriodSelector v-model="selectedPeriod" class="ml-auto" />
+    <div class="p-16 rounded-16 bg-gray-700">
+        <div v-if="loading" class="w-full h-[393px] grid place-content-center">
+            <IconsLoading class="animate-spin" />
         </div>
 
-        <canvas ref="canvasElement" class="max-h-296 aspect-video mt-16" />
+        <template v-else>
+            <div class="flex items-center gap-16">
+                <div class="p-8 rounded-8 bg-blue-700">
+                    <IconsWaterDrop />
+                </div>
+
+                <div>
+                    <p class="text-gray-300 text-14">
+                        Humidity
+                    </p>
+                    <p class="relative text-28 font-600 leading-1">
+                        {{ percentage }}%
+                    </p>
+                </div>
+
+                <PeriodSelector v-model="selectedPeriod" class="ml-auto" />
+            </div>
+
+            <canvas ref="canvasElement" class="max-h-296 aspect-video mt-16" />
+        </template>
     </div>
 </template>
 
@@ -33,7 +39,8 @@
 
     type TimePeriod = 1 | 7 | 30 // Days
 
-    const percentage = ref(0)
+    const loading = ref(true)
+    const percentage = ref()
     const chartDataset = ref<DataPoint[]>()
     const selectedPeriod = ref<TimePeriod>(1)
     const canvasElement = ref<HTMLCanvasElement>()
@@ -72,5 +79,7 @@
     )
 
     onMounted(updateMoisturePercentage)
+
+    watch(percentage, () => loading.value = false, { once: true })
 </script>
 
