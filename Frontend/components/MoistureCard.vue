@@ -61,11 +61,15 @@
     }
 
     async function updateMoisturePercentage() {
-        const data = await API.getMoisture()
+        try {
+            const data = await API.getMoisture()
 
-        chartDataset.value = data.map(entry => ({ x: entry.dataHora, y: entry.umidade }))
+            chartDataset.value = data.map(entry => ({ x: entry.dataHora, y: entry.umidade }))
 
-        percentage.value = data.length ? data[data.length - 1].umidade : 0
+            percentage.value = data.length ? data[data.length - 1].umidade : 0
+        } catch(e) {
+            console.error(e)
+        }
 
         setTimeout(updateMoisturePercentage, 2_000)
     }
